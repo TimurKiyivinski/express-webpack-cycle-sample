@@ -9,6 +9,8 @@ const webpack = require('webpack')
 const webpackDevMiddleware = require('webpack-dev-middleware')
 const webpackHotMiddleware = require('webpack-hot-middleware')
 
+const FruitAPI = require('./api/fruit')
+
 function Server (connection, env) {
   return new Promise((resolve, reject) => {
     // Create express application
@@ -41,11 +43,35 @@ function Server (connection, env) {
       next()
     })
 
-    app.get('/v1/fruits', (req, res) => {
-      res.json({
-        err: false,
-        fruits: ['Apple', 'Orange', 'Pear', 'Grape']
-      })
+    const fruitAPI = new FruitAPI(connection)
+    app.post('/v1/fruit', (req, res) => {
+      fruitAPI.create(req)
+        .then(data => res.status(data.status).json(data))
+        .catch(data => res.status(data.status).json(data))
+    })
+
+    app.get('/v1/fruit/:id', (req, res) => {
+      fruitAPI.readOne(req)
+        .then(data => res.status(data.status).json(data))
+        .catch(data => res.status(data.status).json(data))
+    })
+
+    app.get('/v1/fruit', (req, res) => {
+      fruitAPI.read(req)
+        .then(data => res.status(data.status).json(data))
+        .catch(data => res.status(data.status).json(data))
+    })
+
+    app.put('/v1/fruit/:id', (req, res) => {
+      fruitAPI.update(req)
+        .then(data => res.status(data.status).json(data))
+        .catch(data => res.status(data.status).json(data))
+    })
+
+    app.delete('/v1/fruit/:id', (req, res) => {
+      fruitAPI.delete(req)
+        .then(data => res.status(data.status).json(data))
+        .catch(data => res.status(data.status).json(data))
     })
 
     // Frontend files such as index.html and webpack's bundle.js
