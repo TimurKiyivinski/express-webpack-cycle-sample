@@ -56,7 +56,7 @@ function FruitAPI (connection) {
           : resolve({
             status: 200,
             err: false,
-            fruit: fruits,
+            fruits: fruits,
             message: 'Found fruits'
           })
     })
