@@ -50,7 +50,7 @@ function FruitAPI (connection) {
             status: 404,
             err: true,
             log: fruits,
-            message: 'No such fruit'
+            message: 'No fruits found'
           })
           // Fruits found
           : resolve({
