@@ -8,7 +8,6 @@ import { createHistory } from 'history'
 
 // Components
 import HomeComponent from './components/home'
-import HttpComponent from './components/http'
 import MissingComponent from './components/missing'
 require('./main.scss')
 
@@ -20,7 +19,6 @@ if (module.hot) {
 const main = sources => {
   const match$ = sources.router.define({
     '/': HomeComponent,
-    '/http': HttpComponent,
     '*': MissingComponent
   })
 
@@ -39,13 +37,11 @@ const main = sources => {
   const nav$ = xs.of(nav('.navbar .navbar-fixed-top .navbar-dark .bg-inverse', [
     h1('.navbar-brand', 'express-webpack-cycle-boilerplate'),
     ul('.nav .navbar-nav', [
-      li('.nav-item', [a('.home .nav-link', { href: '#' }, 'Home')]),
-      li('.nav-item', [a('.http .nav-link', { href: '#' }, 'Http Example')])
+      li('.nav-item', [a('.home .nav-link', { href: '#' }, 'Home')])
     ])
   ]))
 
   const navHomeClick$ = sources.DOM.select('.home').events('click')
-  const navHttpClick$ = sources.DOM.select('.http').events('click')
 
   // Wrap component DOM inside a main container DOM
   const vdom$ = xs.combine(nav$, view$).map(([navDOM, viewDOM]) => {
@@ -57,7 +53,6 @@ const main = sources => {
   // Create router sink
   const router$ = xs.merge(
     navHomeClick$.mapTo('/'),
-    navHttpClick$.mapTo('/http'),
     route$
   )
 
