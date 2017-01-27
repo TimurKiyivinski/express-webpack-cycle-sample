@@ -9,8 +9,8 @@ const HomeComponent = sources => {
 
   const getFruits$ = sources.HTTP
     .select('fruits')
+    .map(response$ => response$.replaceError((err) => xs.of(err.response)))
     .flatten()
-    .replaceError(err => xs.of(err.response))
     .map(res => res.body)
     .startWith({
       err: false,
@@ -20,8 +20,8 @@ const HomeComponent = sources => {
 
   const createFruit$ = sources.HTTP
     .select('fruit')
+    .map(response$ => response$.replaceError((err) => xs.of(err.response)))
     .flatten()
-    .replaceError(err => xs.of(err.response))
     .map(res => res.body)
     .startWith(null)
 
@@ -37,7 +37,7 @@ const HomeComponent = sources => {
       }
     }))
 
-  const fruits$ = xs.merge(xs.of(null), fruit$)
+  const fruits$ = createFruit$
     .mapTo({
       category: 'fruits',
       url: '/v1/fruit'
@@ -45,32 +45,27 @@ const HomeComponent = sources => {
 
   const http$ = xs.merge(fruit$, fruits$)
 
-  const vdom$ = xs.combine(getFruits$, createFruit$)
-    .map(([fruits, newFruit]) => {
-      // Debugging
-      console.dir(fruits)
-      console.dir(newFruit)
+  const vdom$ = getFruits$.map(fruits => {
+    const formDOM = div('.card-deck', [
+      div('.card .card-success', [
+        input('.form-control .form-name', { attrs: { type: 'text' } }),
+        button('.btn .btn-success .create-fruit', 'Submit')
+      ])
+    ])
 
-      const formDOM = div('.card-deck', [
-        div('.card .card-success', [
-          input('.form-control .form-name', { attrs: { type: 'text' } }),
-          button('.btn .btn-success .create-fruit', 'Submit')
+    const fruitsDOM = fruits.fruits
+      ? div('.card-columns', fruits.fruits.map(fruit => div('.card .card-inverse .card-primary', [
+        div('.card-block', [
+          p('.card-header', fruit.name)
         ])
-      ])
+      ])))
+      : null
 
-      const fruitsDOM = fruits.err
-        ? null
-        : div('.card-columns', fruits.fruits.map(fruit => div('.card .card-inverse .card-primary', [
-          div('.card-block', [
-            p('.card-header', fruit.name)
-          ])
-        ])))
-
-      return div([
-        formDOM,
-        fruitsDOM
-      ])
-    })
+    return div([
+      formDOM,
+      fruitsDOM
+    ])
+  })
 
   return {
     DOM: vdom$,
