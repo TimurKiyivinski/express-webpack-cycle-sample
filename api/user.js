@@ -1,7 +1,7 @@
 function UserAPI (User) {
   this.create = req => new Promise((resolve, reject) => {
     const data = {
-      name: req.body.username,
+      username: req.body.username,
       password: req.body.password // Please don't ever ever ever actually do this
     }
 
@@ -18,7 +18,7 @@ function UserAPI (User) {
         : resolve({
           status: 201,
           err: true,
-          message: `User ${user.name} created`,
+          message: `User ${user.username} created`,
           user: user
         })
     })
@@ -77,7 +77,7 @@ function UserAPI (User) {
             status: 200,
             err: false,
             user: user,
-            message: `User ${user.name} found`
+            message: `User ${user.username} found`
           })
     })
   })
@@ -111,7 +111,7 @@ function UserAPI (User) {
             status: 200,
             err: false,
             user: user,
-            message: `User ${user.name} updated`
+            message: `User ${user.username} updated`
           })
     })
   })
@@ -140,7 +140,7 @@ function UserAPI (User) {
             status: 200,
             err: false,
             user: user,
-            message: `User ${user.name} deleted`
+            message: `User ${user.username} deleted`
           })
     })
   })

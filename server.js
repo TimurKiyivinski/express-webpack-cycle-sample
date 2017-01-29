@@ -23,7 +23,7 @@ function Server (connection, env) {
     const app = express()
 
     const User = connection.model('User', {
-      name: {
+      username: {
         type: String,
         unique: true
       },
@@ -32,9 +32,10 @@ function Server (connection, env) {
 
     // Configure passport
     passport.use(new LocalStrategy((username, password, done) => {
+      console.log(`User ${username} is logging in with password ${password}`)
       User.findOne({ username: username, password: password }, (err, user) => {
         if (err) {
-          done(err)
+          done(err, false, { message: 'Error finding user' })
         } else if (user === null) {
           done(null, false, { message: 'Invalid user details' })
         } else {
@@ -91,8 +92,37 @@ function Server (connection, env) {
       next()
     })
 
-    app.post('/v1/login', passport.authenticate('local', { failureRedirect: '/login' }), (req, res) => {
-      res.redirect('/')
+    // TODO: Refactor middlewares
+    const requireLogin = (req, res, next) => {
+      if (req.user) {
+        next()
+      } else {
+        res.status(401).json({
+          err: true,
+          message: 'Access denied'
+        })
+      }
+    }
+
+    // Login API
+    app.get('/v1/login', (req, res) => {
+      res.json({
+        err: true
+      })
+    })
+
+    app.get('/v1/logout', (req, res) => {
+      req.logout()
+      res.json({
+        err: false
+      })
+    })
+
+    app.post('/v1/login', passport.authenticate('local', { failureRedirect: '/v1/login' }), (req, res) => {
+      res.json({
+        err: false,
+        message: `Logged in as user ${req.user.username}`
+      })
     })
 
     const userAPI = new UserAPI(User)
@@ -102,16 +132,7 @@ function Server (connection, env) {
         .catch(data => res.status(data.status).json(data))
     })
 
-    const requireLogin = (req, res, next) => {
-      if (req.user) {
-        console.dir(req.user)
-        return next()
-      } else {
-        res.redirect('/login')
-      }
-    }
-
-    app.all('/v1/', [requireLogin])
+    app.all('/v1/*', [requireLogin])
 
     app.get('/v1/user/:id', (req, res) => {
       userAPI.readOne(req)
@@ -150,7 +171,7 @@ function Server (connection, env) {
         .catch(data => res.status(data.status).json(data))
     })
 
-    app.get('/v1/fruit', require('connect-ensure-login').ensureLoggedIn(), (req, res) => {
+    app.get('/v1/fruit', requireLogin, (req, res) => {
       fruitAPI.read(req)
         .then(data => res.status(data.status).json(data))
         .catch(data => res.status(data.status).json(data))
