@@ -23,6 +23,7 @@
     "bootstrap": "4.0.0-alpha.5",
     "cookie-parser": "^1.4.3",
     "cors": "^2.8.1",
+    "cyclejs-cookie": "^0.7.4",
     "cyclic-router": "^3.0.1",
     "express": "^4.14.0",
     "express-sanitizer": "^1.0.1",

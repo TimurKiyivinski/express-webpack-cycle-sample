@@ -113,12 +113,14 @@ function Server (connection, env) {
 
     app.get('/v1/logout', (req, res) => {
       req.logout()
+      res.clearCookie('userid')
       res.json({
         err: false
       })
     })
 
     app.post('/v1/login', passport.authenticate('local', { failureRedirect: '/v1/login' }), (req, res) => {
+      res.cookie('userid', req.user._id, { maxAge: 2592000000 })
       res.json({
         err: false,
         message: `Logged in as user ${req.user.username}`
