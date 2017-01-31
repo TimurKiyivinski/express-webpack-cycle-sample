@@ -9,20 +9,13 @@ import { createHistory } from 'history'
 
 // Components
 import HomeComponent from './components/home'
+import LoginComponent from './components/login'
 import MissingComponent from './components/missing'
 require('./main.scss')
 
 // Webpack hot reload plugin
 if (module.hot) {
   module.hot.accept()
-}
-
-function LoginComponent () {
-  return {
-    DOM: xs.of(div([
-      h1('Please log in')
-    ]))
-  }
 }
 
 const main = sources => {
@@ -52,9 +45,10 @@ const main = sources => {
   // Navigation bar
   const nav$ = cookie$.map(authenticated => authenticated
     ? nav('.navbar .navbar-fixed-top .navbar-dark .bg-inverse', [
-      h1('.navbar-brand', 'express-webpack-cycle-boilerplate'),
+      h1('.navbar-brand', 'express-webpack-cycle-sample'),
       ul('.nav .navbar-nav', [
-        li('.nav-item', [a('.home .nav-link', { href: '#' }, 'Home')])
+        li('.nav-item', [a('.home .nav-link', { href: '#' }, 'Home')]),
+        li('.nav-item .float-md-right', [a('.logout .nav-link', { href: '#' }, 'Log Out')])
       ])
     ])
     : null)
@@ -68,16 +62,27 @@ const main = sources => {
     return div([navDOM, bodyDOM])
   })
 
+  // Logout streams
+  const logout$ = sources.DOM.select('.logout').events('click')
+    .mapTo({
+      category: 'logout',
+      url: '/v1/logout'
+    })
+
+  const getLogout$ = sources.HTTP.select('logout')
+    .mapTo('/login')
+
   // Create router sink
   const router$ = xs.merge(
     auth$,
+    getLogout$,
     navHomeClick$.mapTo('/home'),
     route$
   )
 
   const sinks = {
     DOM: vdom$,
-    HTTP: xs.merge(xs.of({ category: 'login', url: '/v1/login', method: 'POST', send: { username: 'admin', password: 'password' }}), http$),
+    HTTP: xs.merge(logout$, http$),
     router: router$
   }
 
