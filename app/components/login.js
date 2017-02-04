@@ -11,7 +11,8 @@ const LoginComponent = sources => {
   const cookie$ = sources.cookie.get('userid')
     .startWith(null)
   const auth$ = cookie$
-    .map(authenticated => authenticated ? '/home' : '/login')
+    .filter(authenticated => authenticated)
+    .mapTo('/home')
 
   const http$ = sources.DOM.select('.login')
     .events('click')
